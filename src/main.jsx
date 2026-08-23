@@ -1,14 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-
-function App() {
-  return (
-    <div>
-      <h1>QR Menü</h1>
-      <p>Kafeler için dijital menü sistemi</p>
-    </div>
-  );
-}
+import App from "./App";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
