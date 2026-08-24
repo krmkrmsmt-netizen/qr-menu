@@ -78,6 +78,15 @@ function App() {
     }, 3000);
   }
 
+  // AI'dan "300 TL", "300TL" veya "300 TL TL" gelirse
+  // sadece fiyat kısmını bırakır.
+  function cleanPrice(value) {
+    return String(value || "")
+      .replace(/\s*TL\s*$/i, "")
+      .replace(/\s*TL\s*$/i, "")
+      .trim();
+  }
+
   function handleImage(file, callback) {
     if (!file) return;
 
@@ -104,6 +113,7 @@ function App() {
     const newProduct = {
       ...product,
       id: Date.now(),
+      price: cleanPrice(product.price),
     };
 
     setProducts((prev) => [...prev, newProduct]);
@@ -187,7 +197,10 @@ function App() {
           category: categories.includes(item.category)
             ? item.category
             : "Ana Yemekler",
-          price: String(item.price || ""),
+
+          // ÇİFT TL SORUNU BURADA DÜZELTİLDİ
+          price: cleanPrice(item.price),
+
           calories: String(item.calories || ""),
           allergens: Array.isArray(item.allergens)
             ? item.allergens
@@ -643,7 +656,7 @@ function App() {
                     </strong>
 
                     <div style={styles.adminMeta}>
-                      {item.category} · {item.price} TL
+                      {item.category} · {cleanPrice(item.price)} TL
                     </div>
 
                     {item.calories && (
@@ -890,7 +903,7 @@ function App() {
                       </div>
 
                       <strong style={styles.price}>
-                        {item.price} TL
+                        {cleanPrice(item.price)} TL
                       </strong>
                     </div>
 
