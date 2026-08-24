@@ -14,7 +14,9 @@ export default async (request) => {
 
     if (!body.image) {
       return new Response(
-        JSON.stringify({ error: "Menü fotoğrafı gönderilmedi." }),
+        JSON.stringify({
+          error: "Menü fotoğrafı gönderilmedi.",
+        }),
         {
           status: 400,
           headers: { "Content-Type": "application/json" },
@@ -22,12 +24,12 @@ export default async (request) => {
       );
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
       return new Response(
         JSON.stringify({
-          error: "OPENAI_API_KEY bulunamadı.",
+          error: "GEMINI_API_KEY bulunamadı.",
         }),
         {
           status: 500,
@@ -36,23 +38,29 @@ export default async (request) => {
       );
     }
 
-    const response = await fetch(
-      "https://api.openai.com/v1/responses",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4.1-mini",
-          input: [
-            {
-              role: "user",
-              content: [
-                {
-                  type: "input_text",
-                  text: `
+    const imageData = body.image;
+
+    const match = imageData.match(
+      /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/
+    );
+
+    if (!match) {
+      return new Response(
+        JSON.stringify({
+          error:
+            "Geçersiz görsel formatı. Lütfen JPG, PNG veya WEBP yükleyin.",
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const mimeType = match[1];
+    const base64Data = match[2];
+
+    const prompt = `
 Bu bir restoran menüsü fotoğrafıdır.
 
 Fotoğraftaki bütün ürünleri çıkar.
@@ -68,7 +76,7 @@ Her ürün için:
 bilgilerini çıkar.
 
 Fotoğrafta yazmayan bilgileri uydurma.
-Kalori yoksa boş bırak.
+Kalori yoksa boş string bırak.
 Alerjen bilgisi yoksa boş dizi kullan.
 
 Sadece geçerli JSON döndür.
@@ -90,15 +98,35 @@ Format:
     }
   ]
 }
-`,
+`;
+
+    const response = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: prompt,
                 },
                 {
-                  type: "input_image",
-                  image_url: body.image,
+                  inline_data: {
+                    mime_type: mimeType,
+                    data: base64Data,
+                  },
                 },
               ],
             },
           ],
+          generationConfig: {
+            responseMimeType: "application/json",
+          },
         }),
       }
     );
@@ -108,7 +136,9 @@ Format:
     if (!response.ok) {
       return new Response(
         JSON.stringify({
-          error: data?.error?.message || "AI servisi hata verdi.",
+          error:
+            data?.error?.message ||
+            "Gemini AI servisi hata verdi.",
         }),
         {
           status: response.status,
@@ -118,14 +148,12 @@ Format:
     }
 
     const text =
-      data?.output
-        ?.flatMap((item) => item.content || [])
-        ?.find((item) => item.type === "output_text")?.text || "";
+      data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
     if (!text) {
       return new Response(
         JSON.stringify({
-          error: "AI menüden sonuç çıkaramadı.",
+          error: "Gemini menüden sonuç çıkaramadı.",
         }),
         {
           status: 500,
@@ -148,20 +176,28 @@ Format:
       result = JSON.parse(cleaned);
     }
 
-    return new Response(JSON.stringify(result), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify(result),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
   } catch (error) {
     console.error(error);
 
     return new Response(
       JSON.stringify({
-        error: "Menü analiz edilirken hata oluştu.",
+        error:
+          "Menü analiz edilirken hata oluştu.",
       }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
       }
     );
   }
