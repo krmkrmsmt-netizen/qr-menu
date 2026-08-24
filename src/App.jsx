@@ -17,6 +17,7 @@ function App() {
       category: "Burgerler",
       price: "250",
       calories: "650",
+      caloriesEstimated: true,
       allergens: ["Gluten", "Süt"],
       image: "",
     },
@@ -28,12 +29,14 @@ function App() {
     category: "Ana Yemekler",
     price: "",
     calories: "",
+    caloriesEstimated: false,
     allergens: [],
     image: "",
   });
 
   const [menuPhoto, setMenuPhoto] = useState("");
-  const [activeCategory, setActiveCategory] = useState("Tümü");
+  const [activeCategory, setActiveCategory] =
+    useState("Tümü");
   const [message, setMessage] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
 
@@ -63,7 +66,9 @@ function App() {
   ];
 
   const filteredProducts = useMemo(() => {
-    if (activeCategory === "Tümü") return products;
+    if (activeCategory === "Tümü") {
+      return products;
+    }
 
     return products.filter(
       (item) => item.category === activeCategory
@@ -78,15 +83,6 @@ function App() {
     }, 3000);
   }
 
-  // AI'dan "300 TL", "300TL" veya "300 TL TL" gelirse
-  // sadece fiyat kısmını bırakır.
-  function cleanPrice(value) {
-    return String(value || "")
-      .replace(/\s*TL\s*$/i, "")
-      .replace(/\s*TL\s*$/i, "")
-      .trim();
-  }
-
   function handleImage(file, callback) {
     if (!file) return;
 
@@ -97,6 +93,15 @@ function App() {
     };
 
     reader.readAsDataURL(file);
+  }
+
+  function cleanPrice(price) {
+    if (!price) return "";
+
+    return String(price)
+      .replace(/\s*TL\s*TL/gi, " TL")
+      .replace(/\s*TL\s*$/i, "")
+      .trim();
   }
 
   function addProduct() {
@@ -114,9 +119,13 @@ function App() {
       ...product,
       id: Date.now(),
       price: cleanPrice(product.price),
+      caloriesEstimated: false,
     };
 
-    setProducts((prev) => [...prev, newProduct]);
+    setProducts((prev) => [
+      ...prev,
+      newProduct,
+    ]);
 
     setProduct({
       name: "",
@@ -124,6 +133,7 @@ function App() {
       category: "Ana Yemekler",
       price: "",
       calories: "",
+      caloriesEstimated: false,
       allergens: [],
       image: "",
     });
@@ -143,19 +153,25 @@ function App() {
     setProduct((prev) => ({
       ...prev,
       allergens: prev.allergens.includes(name)
-        ? prev.allergens.filter((item) => item !== name)
+        ? prev.allergens.filter(
+            (item) => item !== name
+          )
         : [...prev.allergens, name],
     }));
   }
 
   async function analyzeMenu() {
     if (!menuPhoto) {
-      showMessage("Önce menü fotoğrafını yükleyin.");
+      showMessage(
+        "Önce menü fotoğrafını yükleyin."
+      );
       return;
     }
 
     setAnalyzing(true);
-    setMessage("✨ AI menüyü analiz ediyor...");
+    setMessage(
+      "✨ AI menüyü analiz ediyor..."
+    );
 
     try {
       const response = await fetch(
@@ -175,7 +191,8 @@ function App() {
 
       if (!response.ok) {
         throw new Error(
-          data?.error || "Menü analiz edilemedi."
+          data?.error ||
+            "Menü analiz edilemedi."
         );
       }
 
@@ -189,22 +206,43 @@ function App() {
       }
 
       const newProducts = data.products
-        .filter((item) => item && item.name)
+        .filter(
+          (item) => item && item.name
+        )
         .map((item, index) => ({
           id: Date.now() + index,
+
           name: item.name || "",
-          description: item.description || "",
-          category: categories.includes(item.category)
+
+          description:
+            item.description || "",
+
+          category: categories.includes(
+            item.category
+          )
             ? item.category
             : "Ana Yemekler",
 
-          // ÇİFT TL SORUNU BURADA DÜZELTİLDİ
-          price: cleanPrice(item.price),
+          price: cleanPrice(
+            item.price || ""
+          ),
 
-          calories: String(item.calories || ""),
-          allergens: Array.isArray(item.allergens)
+          calories:
+            item.calories !== undefined &&
+            item.calories !== null &&
+            String(item.calories).trim() !== ""
+              ? String(item.calories)
+              : "0",
+
+          caloriesEstimated:
+            item.caloriesEstimated !== false,
+
+          allergens: Array.isArray(
+            item.allergens
+          )
             ? item.allergens
             : [],
+
           image: "",
         }));
 
@@ -222,9 +260,11 @@ function App() {
       if (data.restaurant) {
         setRestaurant((prev) => ({
           ...prev,
+
           name:
             data.restaurant.name ||
             prev.name,
+
           description:
             data.restaurant.description ||
             prev.description,
@@ -240,7 +280,10 @@ function App() {
       console.error(error);
 
       showMessage(
-        `❌ ${error.message || "AI menü analizinde hata oluştu."}`
+        `❌ ${
+          error.message ||
+          "AI menü analizinde hata oluştu."
+        }`
       );
     } finally {
       setAnalyzing(false);
@@ -312,8 +355,9 @@ function App() {
             </h1>
 
             <p style={styles.heroText}>
-              Restoranınızın profesyonel dijital menüsünü
-              dakikalar içinde oluşturun.
+              Restoranınızın profesyonel
+              dijital menüsünü dakikalar içinde
+              oluşturun.
             </p>
           </div>
 
@@ -495,14 +539,16 @@ function App() {
                   })
                 }
               >
-                {categories.map((category) => (
-                  <option
-                    key={category}
-                    value={category}
-                  >
-                    {category}
-                  </option>
-                ))}
+                {categories.map(
+                  (category) => (
+                    <option
+                      key={category}
+                      value={category}
+                    >
+                      {category}
+                    </option>
+                  )
+                )}
               </select>
             </div>
 
@@ -538,9 +584,10 @@ function App() {
               setProduct({
                 ...product,
                 calories: e.target.value,
+                caloriesEstimated: false,
               })
             }
-            placeholder="650 kcal"
+            placeholder="650"
           />
 
           <label style={styles.label}>
@@ -577,7 +624,9 @@ function App() {
             <img
               src={product.image}
               alt="Ürün"
-              style={styles.productUploadPreview}
+              style={
+                styles.productUploadPreview
+              }
             />
           )}
 
@@ -588,7 +637,9 @@ function App() {
           <div style={styles.allergenGrid}>
             {allergens.map((item) => {
               const selected =
-                product.allergens.includes(item);
+                product.allergens.includes(
+                  item
+                );
 
               return (
                 <button
@@ -630,7 +681,9 @@ function App() {
               Henüz ürün eklenmedi.
             </div>
           ) : (
-            <div style={styles.productAdminList}>
+            <div
+              style={styles.productAdminList}
+            >
               {products.map((item) => (
                 <div
                   key={item.id}
@@ -640,11 +693,15 @@ function App() {
                     <img
                       src={item.image}
                       alt={item.name}
-                      style={styles.adminProductImage}
+                      style={
+                        styles.adminProductImage
+                      }
                     />
                   ) : (
                     <div
-                      style={styles.adminImagePlaceholder}
+                      style={
+                        styles.adminImagePlaceholder
+                      }
                     >
                       🍽️
                     </div>
@@ -655,21 +712,37 @@ function App() {
                       {item.name}
                     </strong>
 
-                    <div style={styles.adminMeta}>
-                      {item.category} · {cleanPrice(item.price)} TL
+                    <div
+                      style={styles.adminMeta}
+                    >
+                      {item.category} ·{" "}
+                      {item.price} TL
                     </div>
 
                     {item.calories && (
                       <div
-                        style={styles.adminCalories}
+                        style={
+                          styles.adminCalories
+                        }
                       >
-                        🔥 {item.calories} kcal
+                        🔥 {item.calories} kcal{" "}
+                        {item.caloriesEstimated && (
+                          <span
+                            style={
+                              styles.estimatedBadge
+                            }
+                          >
+                            Tahmini
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>
 
                   <button
-                    style={styles.deleteButton}
+                    style={
+                      styles.deleteButton
+                    }
                     onClick={() =>
                       deleteProduct(item.id)
                     }
@@ -699,6 +772,7 @@ function App() {
                 e.target.files?.[0],
                 (image) => {
                   setMenuPhoto(image);
+
                   showMessage(
                     "Menü fotoğrafı yüklendi."
                   );
@@ -714,7 +788,9 @@ function App() {
                 menuPhotoRef.current?.click()
               }
             >
-              <div style={styles.cameraIcon}>
+              <div
+                style={styles.cameraIcon}
+              >
                 📷
               </div>
 
@@ -727,14 +803,18 @@ function App() {
               </span>
             </button>
           ) : (
-            <div style={styles.menuPhotoBox}>
+            <div
+              style={styles.menuPhotoBox}
+            >
               <img
                 src={menuPhoto}
                 alt="Menü"
                 style={styles.menuPhoto}
               />
 
-              <div style={styles.aiOverlay}>
+              <div
+                style={styles.aiOverlay}
+              >
                 ✨ AI Menü Okuma
               </div>
 
@@ -743,7 +823,9 @@ function App() {
               <button
                 style={{
                   ...styles.primaryButton,
-                  opacity: analyzing ? 0.7 : 1,
+                  opacity: analyzing
+                    ? 0.7
+                    : 1,
                 }}
                 disabled={analyzing}
                 onClick={analyzeMenu}
@@ -778,7 +860,7 @@ function App() {
 
             <ProcessStep
               number="5"
-              text="Kontrol et"
+              text="Kalorileri tahmin et"
             />
 
             <ProcessStep
@@ -799,13 +881,19 @@ function App() {
           />
 
           <div style={styles.phoneFrame}>
-            <div style={styles.customerMenu}>
-              <div style={styles.customerHeader}>
+            <div
+              style={styles.customerMenu}
+            >
+              <div
+                style={styles.customerHeader}
+              >
                 {restaurant.logo ? (
                   <img
                     src={restaurant.logo}
                     alt="Logo"
-                    style={styles.customerLogo}
+                    style={
+                      styles.customerLogo
+                    }
                   />
                 ) : (
                   <div
@@ -817,11 +905,19 @@ function App() {
                   </div>
                 )}
 
-                <h2 style={styles.customerHeaderTitle}>
+                <h2
+                  style={
+                    styles.customerHeaderTitle
+                  }
+                >
                   {restaurant.name}
                 </h2>
 
-                <p style={styles.customerHeaderText}>
+                <p
+                  style={
+                    styles.customerHeaderText
+                  }
+                >
                   {restaurant.description}
                 </p>
 
@@ -832,14 +928,19 @@ function App() {
                 )}
               </div>
 
-              <div style={styles.categoryScroll}>
+              <div
+                style={styles.categoryScroll}
+              >
                 <button
                   onClick={() =>
-                    setActiveCategory("Tümü")
+                    setActiveCategory(
+                      "Tümü"
+                    )
                   }
                   style={{
                     ...styles.categoryButton,
-                    ...(activeCategory === "Tümü"
+                    ...(activeCategory ===
+                    "Tümü"
                       ? styles.categoryActive
                       : {}),
                   }}
@@ -847,106 +948,141 @@ function App() {
                   Tümü
                 </button>
 
-                {categories.map((category) => (
-                  <button
-                    key={category}
-                    onClick={() =>
-                      setActiveCategory(category)
-                    }
-                    style={{
-                      ...styles.categoryButton,
-                      ...(activeCategory === category
-                        ? styles.categoryActive
-                        : {}),
-                    }}
-                  >
-                    {category}
-                  </button>
-                ))}
+                {categories.map(
+                  (category) => (
+                    <button
+                      key={category}
+                      onClick={() =>
+                        setActiveCategory(
+                          category
+                        )
+                      }
+                      style={{
+                        ...styles.categoryButton,
+                        ...(activeCategory ===
+                        category
+                          ? styles.categoryActive
+                          : {}),
+                      }}
+                    >
+                      {category}
+                    </button>
+                  )
+                )}
               </div>
 
               <div>
-                {filteredProducts.map((item) => (
-                  <div
-                    key={item.id}
-                    style={styles.customerProduct}
-                  >
-                    {item.image && (
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        style={
-                          styles.customerProductImage
-                        }
-                      />
-                    )}
-
+                {filteredProducts.map(
+                  (item) => (
                     <div
-                      style={styles.customerProductTop}
+                      key={item.id}
+                      style={
+                        styles.customerProduct
+                      }
                     >
-                      <div>
-                        <h3
+                      {item.image && (
+                        <img
+                          src={item.image}
+                          alt={item.name}
                           style={
-                            styles.customerProductTitle
+                            styles.customerProductImage
                           }
-                        >
-                          {item.name}
-                        </h3>
+                        />
+                      )}
 
-                        <div
-                          style={
-                            styles.customerCategory
-                          }
-                        >
-                          {item.category}
-                        </div>
-                      </div>
-
-                      <strong style={styles.price}>
-                        {cleanPrice(item.price)} TL
-                      </strong>
-                    </div>
-
-                    {item.description && (
-                      <p
+                      <div
                         style={
-                          styles.customerDescription
+                          styles.customerProductTop
                         }
                       >
-                        {item.description}
-                      </p>
-                    )}
+                        <div>
+                          <h3
+                            style={
+                              styles.customerProductTitle
+                            }
+                          >
+                            {item.name}
+                          </h3>
 
-                    <div style={styles.productInfo}>
-                      {item.calories && (
-                        <span>
-                          🔥 {item.calories} kcal
-                        </span>
-                      )}
+                          <div
+                            style={
+                              styles.customerCategory
+                            }
+                          >
+                            {item.category}
+                          </div>
+                        </div>
 
-                      {item.allergens.length > 0 && (
-                        <span
+                        <strong
+                          style={styles.price}
+                        >
+                          {item.price} TL
+                        </strong>
+                      </div>
+
+                      {item.description && (
+                        <p
                           style={
-                            styles.allergenText
+                            styles.customerDescription
                           }
                         >
-                          ⚠️{" "}
-                          {item.allergens.join(", ")}
-                        </span>
+                          {item.description}
+                        </p>
                       )}
+
+                      <div
+                        style={
+                          styles.productInfo
+                        }
+                      >
+                        {item.calories && (
+                          <span>
+                            🔥{" "}
+                            {item.calories} kcal
+
+                            {item.caloriesEstimated && (
+                              <span
+                                style={
+                                  styles.estimatedCalories
+                                }
+                              >
+                                {" "}
+                                · Tahmini
+                              </span>
+                            )}
+                          </span>
+                        )}
+
+                        {item.allergens
+                          .length > 0 && (
+                          <span
+                            style={
+                              styles.allergenText
+                            }
+                          >
+                            ⚠️{" "}
+                            {item.allergens.join(
+                              ", "
+                            )}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                )}
               </div>
 
-              <div style={styles.customerFooter}>
+              <div
+                style={styles.customerFooter}
+              >
                 <strong>
                   {restaurant.name}
                 </strong>
 
                 {restaurant.phone && (
                   <div>
-                    📞 {restaurant.phone}
+                    📞{" "}
+                    {restaurant.phone}
                   </div>
                 )}
 
@@ -958,7 +1094,9 @@ function App() {
           </div>
         </section>
 
-        <section style={styles.actionCard}>
+        <section
+          style={styles.actionCard}
+        >
           <div>
             <h2>
               🚀 Menünüz Hazır
@@ -970,16 +1108,22 @@ function App() {
             </p>
           </div>
 
-          <div style={styles.actionButtons}>
+          <div
+            style={styles.actionButtons}
+          >
             <button
-              style={styles.secondaryAction}
+              style={
+                styles.secondaryAction
+              }
               onClick={saveMenu}
             >
               💾 Menüyü Kaydet
             </button>
 
             <button
-              style={styles.primaryAction}
+              style={
+                styles.primaryAction
+              }
               onClick={createQR}
             >
               📱 QR Kod Oluştur
@@ -1003,11 +1147,15 @@ function SectionTitle({
       </div>
 
       <div>
-        <h2 style={styles.sectionHeading}>
+        <h2
+          style={styles.sectionHeading}
+        >
           {title}
         </h2>
 
-        <p style={styles.sectionSubtitle}>
+        <p
+          style={styles.sectionSubtitle}
+        >
           {subtitle}
         </p>
       </div>
@@ -1020,14 +1168,16 @@ function ProcessStep({
   text,
 }) {
   return (
-    <div style={styles.processStep}>
-      <div style={styles.processNumber}>
+    <div
+      style={styles.processStep}
+    >
+      <div
+        style={styles.processNumber}
+      >
         {number}
       </div>
 
-      <span>
-        {text}
-      </span>
+      <span>{text}</span>
     </div>
   );
 }
@@ -1036,7 +1186,8 @@ const styles = {
   page: {
     minHeight: "100vh",
     background: "#f3f5f8",
-    fontFamily: "Inter, Arial, sans-serif",
+    fontFamily:
+      "Inter, Arial, sans-serif",
     color: "#172033",
   },
 
@@ -1045,7 +1196,8 @@ const styles = {
     color: "white",
     padding: "18px 5%",
     display: "flex",
-    justifyContent: "space-between",
+    justifyContent:
+      "space-between",
     alignItems: "center",
     position: "sticky",
     top: 0,
@@ -1087,7 +1239,8 @@ const styles = {
     padding: 32,
     marginBottom: 22,
     display: "flex",
-    justifyContent: "space-between",
+    justifyContent:
+      "space-between",
     alignItems: "center",
   },
 
@@ -1114,7 +1267,8 @@ const styles = {
     width: 90,
     height: 90,
     borderRadius: 24,
-    background: "rgba(255,255,255,.15)",
+    background:
+      "rgba(255,255,255,.15)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -1127,7 +1281,8 @@ const styles = {
     borderRadius: 22,
     padding: 26,
     marginBottom: 20,
-    border: "1px solid #e5e7eb",
+    border:
+      "1px solid #e5e7eb",
     boxShadow:
       "0 5px 20px rgba(16,24,40,.04)",
   },
@@ -1167,7 +1322,8 @@ const styles = {
     padding: "14px",
     marginBottom: 15,
     borderRadius: 11,
-    border: "1px solid #d0d5dd",
+    border:
+      "1px solid #d0d5dd",
     fontSize: 15,
     background: "white",
   },
@@ -1179,7 +1335,8 @@ const styles = {
     padding: "14px",
     marginBottom: 15,
     borderRadius: 11,
-    border: "1px solid #d0d5dd",
+    border:
+      "1px solid #d0d5dd",
     fontSize: 15,
     resize: "vertical",
   },
@@ -1194,7 +1351,8 @@ const styles = {
   uploadButton: {
     padding: "13px 18px",
     borderRadius: 11,
-    border: "1px solid #d0d5dd",
+    border:
+      "1px solid #d0d5dd",
     background: "white",
     fontWeight: 700,
     cursor: "pointer",
@@ -1209,7 +1367,8 @@ const styles = {
     height: 100,
     objectFit: "contain",
     borderRadius: 15,
-    border: "1px solid #eee",
+    border:
+      "1px solid #eee",
   },
 
   subTitle: {
@@ -1226,7 +1385,8 @@ const styles = {
   allergenButton: {
     padding: "9px 13px",
     borderRadius: 30,
-    border: "1px solid #d0d5dd",
+    border:
+      "1px solid #d0d5dd",
     background: "white",
     cursor: "pointer",
   },
@@ -1267,7 +1427,8 @@ const styles = {
     alignItems: "center",
     gap: 14,
     padding: 12,
-    border: "1px solid #eaecf0",
+    border:
+      "1px solid #eaecf0",
     borderRadius: 15,
   },
 
@@ -1299,6 +1460,20 @@ const styles = {
     color: "#b45309",
     fontSize: 12,
     marginTop: 3,
+    display: "flex",
+    alignItems: "center",
+    gap: 5,
+  },
+
+  estimatedBadge: {
+    background: "#fff7ed",
+    color: "#c2410c",
+    border:
+      "1px solid #fed7aa",
+    borderRadius: 6,
+    padding: "2px 6px",
+    fontSize: 11,
+    fontWeight: 700,
   },
 
   deleteButton: {
@@ -1315,7 +1490,8 @@ const styles = {
     width: "100%",
     minHeight: 230,
     borderRadius: 18,
-    border: "2px dashed #cbd5e1",
+    border:
+      "2px dashed #cbd5e1",
     background: "#f8fafc",
     display: "flex",
     flexDirection: "column",
@@ -1339,7 +1515,8 @@ const styles = {
     maxHeight: 500,
     objectFit: "contain",
     borderRadius: 15,
-    border: "1px solid #e5e7eb",
+    border:
+      "1px solid #e5e7eb",
   },
 
   aiOverlay: {
@@ -1398,7 +1575,8 @@ const styles = {
 
   customerHeader: {
     textAlign: "center",
-    padding: "28px 20px 22px",
+    padding:
+      "28px 20px 22px",
     background:
       "linear-gradient(180deg,#f8fafc,#ffffff)",
   },
@@ -1423,7 +1601,8 @@ const styles = {
   customerLogoPlaceholder: {
     width: 70,
     height: 70,
-    margin: "auto auto 10px",
+    margin:
+      "auto auto 10px",
     borderRadius: 20,
     background: "#eef2ff",
     display: "flex",
@@ -1437,13 +1616,16 @@ const styles = {
     gap: 8,
     overflowX: "auto",
     padding: "12px 15px",
-    borderTop: "1px solid #eee",
-    borderBottom: "1px solid #eee",
+    borderTop:
+      "1px solid #eee",
+    borderBottom:
+      "1px solid #eee",
   },
 
   categoryButton: {
     whiteSpace: "nowrap",
-    border: "1px solid #e5e7eb",
+    border:
+      "1px solid #e5e7eb",
     background: "white",
     borderRadius: 20,
     padding: "8px 13px",
@@ -1458,7 +1640,8 @@ const styles = {
 
   customerProduct: {
     padding: 18,
-    borderBottom: "1px solid #eee",
+    borderBottom:
+      "1px solid #eee",
   },
 
   customerProductImage: {
@@ -1471,7 +1654,8 @@ const styles = {
 
   customerProductTop: {
     display: "flex",
-    justifyContent: "space-between",
+    justifyContent:
+      "space-between",
     gap: 12,
   },
 
@@ -1504,6 +1688,11 @@ const styles = {
     color: "#667085",
   },
 
+  estimatedCalories: {
+    color: "#c2410c",
+    fontWeight: 700,
+  },
+
   allergenText: {
     color: "#b91c1c",
   },
@@ -1522,7 +1711,8 @@ const styles = {
     borderRadius: 22,
     padding: 28,
     display: "flex",
-    justifyContent: "space-between",
+    justifyContent:
+      "space-between",
     alignItems: "center",
     gap: 20,
   },
@@ -1536,7 +1726,8 @@ const styles = {
   secondaryAction: {
     padding: "14px 18px",
     borderRadius: 11,
-    border: "1px solid #475467",
+    border:
+      "1px solid #475467",
     background: "#1f2937",
     color: "white",
     fontWeight: 800,
