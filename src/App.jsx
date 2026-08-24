@@ -159,7 +159,6 @@ function App() {
 
   return (
     <div style={styles.page}>
-
       {message && (
         <div style={styles.toast}>
           {message}
@@ -182,7 +181,9 @@ function App() {
           onClick={() =>
             document
               .getElementById("preview")
-              ?.scrollIntoView({ behavior: "smooth" })
+              ?.scrollIntoView({
+                behavior: "smooth",
+              })
           }
         >
           👁️ Menü Önizleme
@@ -190,7 +191,6 @@ function App() {
       </header>
 
       <main style={styles.container}>
-
         <section style={styles.hero}>
           <div>
             <div style={styles.heroBadge}>
@@ -211,8 +211,6 @@ function App() {
             QR
           </div>
         </section>
-
-        {/* RESTORAN BİLGİLERİ */}
 
         <section style={styles.card}>
           <SectionTitle
@@ -254,7 +252,6 @@ function App() {
           />
 
           <div style={styles.twoColumns}>
-
             <div>
               <label style={styles.label}>
                 Telefon
@@ -290,7 +287,6 @@ function App() {
                 placeholder="Restoran adresi"
               />
             </div>
-
           </div>
 
           <label style={styles.label}>
@@ -316,7 +312,9 @@ function App() {
 
           <button
             style={styles.uploadButton}
-            onClick={() => logoRef.current?.click()}
+            onClick={() =>
+              logoRef.current?.click()
+            }
           >
             🖼️ Logo Yükle
           </button>
@@ -331,8 +329,6 @@ function App() {
             </div>
           )}
         </section>
-
-        {/* ÜRÜN EKLE */}
 
         <section style={styles.card}>
           <SectionTitle
@@ -374,7 +370,6 @@ function App() {
           />
 
           <div style={styles.twoColumns}>
-
             <div>
               <label style={styles.label}>
                 Kategori
@@ -391,7 +386,10 @@ function App() {
                 }
               >
                 {categories.map((category) => (
-                  <option key={category}>
+                  <option
+                    key={category}
+                    value={category}
+                  >
                     {category}
                   </option>
                 ))}
@@ -416,7 +414,6 @@ function App() {
                 placeholder="250"
               />
             </div>
-
           </div>
 
           <label style={styles.label}>
@@ -486,7 +483,9 @@ function App() {
               return (
                 <button
                   key={item}
-                  onClick={() => toggleAllergen(item)}
+                  onClick={() =>
+                    toggleAllergen(item)
+                  }
                   style={{
                     ...styles.allergenButton,
                     ...(selected
@@ -508,8 +507,6 @@ function App() {
             + Ürünü Menüye Ekle
           </button>
         </section>
-
-        {/* ÜRÜNLER */}
 
         <section style={styles.card}>
           <SectionTitle
@@ -536,7 +533,9 @@ function App() {
                       style={styles.adminProductImage}
                     />
                   ) : (
-                    <div style={styles.adminImagePlaceholder}>
+                    <div
+                      style={styles.adminImagePlaceholder}
+                    >
                       🍽️
                     </div>
                   )}
@@ -551,7 +550,9 @@ function App() {
                     </div>
 
                     {item.calories && (
-                      <div style={styles.adminCalories}>
+                      <div
+                        style={styles.adminCalories}
+                      >
                         🔥 {item.calories} kcal
                       </div>
                     )}
@@ -570,8 +571,6 @@ function App() {
             </div>
           )}
         </section>
-
-        {/* FOTOĞRAFTAN MENÜ */}
 
         <section style={styles.card}>
           <SectionTitle
@@ -647,30 +646,33 @@ function App() {
               number="1"
               text="Fotoğraf yükle"
             />
+
             <ProcessStep
               number="2"
               text="Yazıları oku"
             />
+
             <ProcessStep
               number="3"
               text="Ürünleri çıkar"
             />
+
             <ProcessStep
               number="4"
               text="Fiyatları bul"
             />
+
             <ProcessStep
               number="5"
               text="Kontrol et"
             />
+
             <ProcessStep
               number="6"
               text="Menüye ekle"
             />
           </div>
         </section>
-
-        {/* MENÜ ÖNİZLEME */}
 
         <section
           id="preview"
@@ -683,11 +685,8 @@ function App() {
           />
 
           <div style={styles.phoneFrame}>
-
             <div style={styles.customerMenu}>
-
               <div style={styles.customerHeader}>
-
                 {restaurant.logo ? (
                   <img
                     src={restaurant.logo}
@@ -695,16 +694,20 @@ function App() {
                     style={styles.customerLogo}
                   />
                 ) : (
-                  <div style={styles.customerLogoPlaceholder}>
+                  <div
+                    style={
+                      styles.customerLogoPlaceholder
+                    }
+                  >
                     🍽️
                   </div>
                 )}
 
-                <h2>
+                <h2 style={styles.customerHeaderTitle}>
                   {restaurant.name}
                 </h2>
 
-                <p>
+                <p style={styles.customerHeaderText}>
                   {restaurant.description}
                 </p>
 
@@ -716,7 +719,6 @@ function App() {
               </div>
 
               <div style={styles.categoryScroll}>
-
                 <button
                   onClick={() =>
                     setActiveCategory("Tümü")
@@ -755,22 +757,33 @@ function App() {
                     key={item.id}
                     style={styles.customerProduct}
                   >
-
                     {item.image && (
                       <img
                         src={item.image}
                         alt={item.name}
-                        style={styles.customerProductImage}
+                        style={
+                          styles.customerProductImage
+                        }
                       />
                     )}
 
-                    <div style={styles.customerProductTop}>
+                    <div
+                      style={styles.customerProductTop}
+                    >
                       <div>
-                        <h3>
+                        <h3
+                          style={
+                            styles.customerProductTitle
+                          }
+                        >
                           {item.name}
                         </h3>
 
-                        <div style={styles.customerCategory}>
+                        <div
+                          style={
+                            styles.customerCategory
+                          }
+                        >
                           {item.category}
                         </div>
                       </div>
@@ -781,13 +794,16 @@ function App() {
                     </div>
 
                     {item.description && (
-                      <p style={styles.customerDescription}>
+                      <p
+                        style={
+                          styles.customerDescription
+                        }
+                      >
                         {item.description}
                       </p>
                     )}
 
                     <div style={styles.productInfo}>
-
                       {item.calories && (
                         <span>
                           🔥 {item.calories} kcal
@@ -795,14 +811,16 @@ function App() {
                       )}
 
                       {item.allergens.length > 0 && (
-                        <span style={styles.allergenText}>
+                        <span
+                          style={
+                            styles.allergenText
+                          }
+                        >
                           ⚠️{" "}
                           {item.allergens.join(", ")}
                         </span>
                       )}
-
                     </div>
-
                   </div>
                 ))}
               </div>
@@ -822,15 +840,11 @@ function App() {
                   Dijital Menü
                 </small>
               </div>
-
             </div>
           </div>
         </section>
 
-        {/* KAYDET / QR */}
-
         <section style={styles.actionCard}>
-
           <div>
             <h2>
               🚀 Menünüz Hazır
@@ -843,7 +857,6 @@ function App() {
           </div>
 
           <div style={styles.actionButtons}>
-
             <button
               style={styles.secondaryAction}
               onClick={saveMenu}
@@ -857,11 +870,8 @@ function App() {
             >
               📱 QR Kod Oluştur
             </button>
-
           </div>
-
         </section>
-
       </main>
     </div>
   );
@@ -912,8 +922,7 @@ const styles = {
   page: {
     minHeight: "100vh",
     background: "#f3f5f8",
-    fontFamily:
-      "Inter, Arial, sans-serif",
+    fontFamily: "Inter, Arial, sans-serif",
     color: "#172033",
   },
 
@@ -947,6 +956,7 @@ const styles = {
     padding: "12px 18px",
     borderRadius: 12,
     fontWeight: 700,
+    cursor: "pointer",
   },
 
   container: {
@@ -1184,6 +1194,7 @@ const styles = {
     padding: "9px 13px",
     borderRadius: 9,
     fontWeight: 700,
+    cursor: "pointer",
   },
 
   photoDropzone: {
@@ -1278,6 +1289,15 @@ const styles = {
       "linear-gradient(180deg,#f8fafc,#ffffff)",
   },
 
+  customerHeaderTitle: {
+    margin: 0,
+  },
+
+  customerHeaderText: {
+    color: "#667085",
+    margin: "7px 0",
+  },
+
   customerLogo: {
     width: 80,
     height: 80,
@@ -1298,15 +1318,6 @@ const styles = {
     fontSize: 32,
   },
 
-  customerHeader h2: {
-    margin: 0,
-  },
-
-  customerHeader p: {
-    color: "#667085",
-    margin: "7px 0",
-  },
-
   categoryScroll: {
     display: "flex",
     gap: 8,
@@ -1323,6 +1334,7 @@ const styles = {
     borderRadius: 20,
     padding: "8px 13px",
     fontWeight: 700,
+    cursor: "pointer",
   },
 
   categoryActive: {
@@ -1349,7 +1361,7 @@ const styles = {
     gap: 12,
   },
 
-  customerProductTop h3: {
+  customerProductTitle: {
     margin: 0,
   },
 
@@ -1414,6 +1426,7 @@ const styles = {
     background: "#1f2937",
     color: "white",
     fontWeight: 800,
+    cursor: "pointer",
   },
 
   primaryAction: {
@@ -1423,6 +1436,7 @@ const styles = {
     background: "#2563eb",
     color: "white",
     fontWeight: 800,
+    cursor: "pointer",
   },
 
   productUploadPreview: {
