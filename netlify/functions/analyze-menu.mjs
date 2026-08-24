@@ -75,9 +75,17 @@ Her ürün için:
 
 bilgilerini çıkar.
 
-Fotoğrafta yazmayan bilgileri uydurma.
-Kalori yoksa boş string bırak.
-Alerjen bilgisi yoksa boş dizi kullan.
+ÖNEMLİ KALORİ KURALI:
+- Fotoğrafta kalori yazıyorsa, yazan kaloriyi kullan.
+- Fotoğrafta kalori yazmıyorsa, ürünün içeriği ve tahmini porsiyonuna göre yaklaşık kalori hesapla.
+- Kalori alanını ASLA boş bırakma.
+- Tahmini kaloriyi sayı olarak döndür.
+- Örneğin: "650" veya "450".
+- Kalori tahmini yaparken makul ve gerçekçi bir değer kullan.
+
+Alerjen bilgisi fotoğrafta veya ürün içeriğinden güvenilir şekilde belirlenemiyorsa boş dizi kullan.
+
+Ürün adını, fiyatını veya fotoğrafta açıkça görülen diğer bilgileri değiştirme.
 
 Sadece geçerli JSON döndür.
 
@@ -174,6 +182,19 @@ Format:
         .trim();
 
       result = JSON.parse(cleaned);
+    }
+
+    // Kalori boş geldiyse son kontrolde tekrar tahmin ettiriyoruz.
+    if (result.products && Array.isArray(result.products)) {
+      result.products = result.products.map((item) => ({
+        ...item,
+        calories:
+          item.calories !== undefined &&
+          item.calories !== null &&
+          String(item.calories).trim() !== ""
+            ? String(item.calories)
+            : "Tahmin edilemedi",
+      }));
     }
 
     return new Response(
