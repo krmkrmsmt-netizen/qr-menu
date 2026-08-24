@@ -35,6 +35,7 @@ function App() {
   const [menuPhoto, setMenuPhoto] = useState("");
   const [activeCategory, setActiveCategory] = useState("Tümü");
   const [message, setMessage] = useState("");
+  const [analyzing, setAnalyzing] = useState(false);
 
   const menuPhotoRef = useRef(null);
   const productPhotoRef = useRef(null);
@@ -74,7 +75,7 @@ function App() {
 
     setTimeout(() => {
       setMessage("");
-    }, 2500);
+    }, 3000);
   }
 
   function handleImage(file, callback) {
@@ -135,6 +136,102 @@ function App() {
         ? prev.allergens.filter((item) => item !== name)
         : [...prev.allergens, name],
     }));
+  }
+
+  async function analyzeMenu() {
+    if (!menuPhoto) {
+      showMessage("Önce menü fotoğrafını yükleyin.");
+      return;
+    }
+
+    setAnalyzing(true);
+    setMessage("✨ AI menüyü analiz ediyor...");
+
+    try {
+      const response = await fetch(
+        "/.netlify/functions/analyze-menu",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            image: menuPhoto,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data?.error || "Menü analiz edilemedi."
+        );
+      }
+
+      if (
+        !data.products ||
+        !Array.isArray(data.products)
+      ) {
+        throw new Error(
+          "AI geçerli ürün listesi döndürmedi."
+        );
+      }
+
+      const newProducts = data.products
+        .filter((item) => item && item.name)
+        .map((item, index) => ({
+          id: Date.now() + index,
+          name: item.name || "",
+          description: item.description || "",
+          category: categories.includes(item.category)
+            ? item.category
+            : "Ana Yemekler",
+          price: String(item.price || ""),
+          calories: String(item.calories || ""),
+          allergens: Array.isArray(item.allergens)
+            ? item.allergens
+            : [],
+          image: "",
+        }));
+
+      if (newProducts.length === 0) {
+        throw new Error(
+          "Fotoğraftan ürün bulunamadı."
+        );
+      }
+
+      setProducts((prev) => [
+        ...prev,
+        ...newProducts,
+      ]);
+
+      if (data.restaurant) {
+        setRestaurant((prev) => ({
+          ...prev,
+          name:
+            data.restaurant.name ||
+            prev.name,
+          description:
+            data.restaurant.description ||
+            prev.description,
+        }));
+      }
+
+      setActiveCategory("Tümü");
+
+      showMessage(
+        `✅ ${newProducts.length} ürün AI tarafından bulundu ve menüye eklendi.`
+      );
+    } catch (error) {
+      console.error(error);
+
+      showMessage(
+        `❌ ${error.message || "AI menü analizinde hata oluştu."}`
+      );
+    } finally {
+      setAnalyzing(false);
+    }
   }
 
   function createQR() {
@@ -576,7 +673,7 @@ function App() {
           <SectionTitle
             icon="📸"
             title="Fotoğraftan Menü Oluştur"
-            subtitle="Menünüzün fotoğrafını yükleyin. Otomatik menü okuma sistemi burada çalışacak."
+            subtitle="Menünüzün fotoğrafını yükleyin. AI ürünleri otomatik olarak çıkarsın."
           />
 
           <input
@@ -628,15 +725,19 @@ function App() {
                 ✨ AI Menü Okuma
               </div>
 
+              <br />
+
               <button
-                style={styles.primaryButton}
-                onClick={() =>
-                  showMessage(
-                    "AI menü okuma sistemi sonraki aşamada bağlanacak."
-                  )
-                }
+                style={{
+                  ...styles.primaryButton,
+                  opacity: analyzing ? 0.7 : 1,
+                }}
+                disabled={analyzing}
+                onClick={analyzeMenu}
               >
-                ✨ Fotoğrafı Analiz Et
+                {analyzing
+                  ? "⏳ AI Menüyü Analiz Ediyor..."
+                  : "✨ Fotoğrafı Analiz Et"}
               </button>
             </div>
           )}
