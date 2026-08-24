@@ -12,25 +12,24 @@ function App() {
     >
       <header
         style={{
-          padding: "20px 7%",
+          background: "#ffffff",
+          borderBottom: "1px solid #e5e7eb",
+          padding: "18px 7%",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          background: "#ffffff",
-          borderBottom: "1px solid #e5e7eb",
         }}
       >
-        <h2 style={{ margin: 0 }}>QR Menü</h2>
+        <h2 style={{ margin: 0 }}>MenuCraft QR</h2>
 
         <button
           style={{
-            padding: "12px 20px",
-            borderRadius: "10px",
+            padding: "10px 18px",
             border: "none",
+            borderRadius: "10px",
             background: "#111827",
-            color: "#ffffff",
+            color: "white",
             fontWeight: "bold",
-            cursor: "pointer",
           }}
         >
           Giriş Yap
@@ -50,8 +49,8 @@ function App() {
         <h1
           style={{
             fontSize: "48px",
-            margin: "20px 0",
             lineHeight: "1.15",
+            margin: "20px 0",
           }}
         >
           Restoranınız için
@@ -63,11 +62,11 @@ function App() {
 
         <p
           style={{
-            fontSize: "19px",
-            color: "#6b7280",
             maxWidth: "650px",
             margin: "0 auto 30px",
+            fontSize: "19px",
             lineHeight: "1.6",
+            color: "#6b7280",
           }}
         >
           Menülerinizi kolayca dijitalleştirin.
@@ -78,13 +77,12 @@ function App() {
         <button
           style={{
             padding: "16px 28px",
-            borderRadius: "12px",
             border: "none",
+            borderRadius: "12px",
             background: "#2563eb",
-            color: "#ffffff",
+            color: "white",
             fontSize: "17px",
             fontWeight: "bold",
-            cursor: "pointer",
           }}
         >
           Ücretsiz Menü Oluştur 🚀
@@ -101,34 +99,30 @@ function App() {
         >
           <div
             style={{
-              background: "#ffffff",
+              background: "white",
               padding: "30px",
               borderRadius: "16px",
               border: "1px solid #e5e7eb",
             }}
           >
             <div style={{ fontSize: "35px" }}>📲</div>
-
             <h3>QR Kod Menü</h3>
-
             <p>
-              Müşterileriniz menünüze saniyeler
-              içinde ulaşsın.
+              Müşterileriniz menünüze saniyeler içinde
+              ulaşsın.
             </p>
           </div>
 
           <div
             style={{
-              background: "#ffffff",
+              background: "white",
               padding: "30px",
               borderRadius: "16px",
               border: "1px solid #e5e7eb",
             }}
           >
             <div style={{ fontSize: "35px" }}>⚡</div>
-
             <h3>Kolay Yönetim</h3>
-
             <p>
               Ürünlerinizi ve fiyatlarınızı kolayca
               güncelleyin.
@@ -137,59 +131,19 @@ function App() {
 
           <div
             style={{
-              background: "#ffffff",
+              background: "white",
               padding: "30px",
               borderRadius: "16px",
               border: "1px solid #e5e7eb",
             }}
           >
             <div style={{ fontSize: "35px" }}>📱</div>
-
             <h3>Mobil Uyumlu</h3>
-
             <p>
               Şık ve mobil uyumlu dijital menünüzü
               müşterilerinize sunun.
             </p>
           </div>
-        </section>
-
-        <section
-          style={{
-            marginTop: "60px",
-            padding: "40px 20px",
-            background: "#ffffff",
-            borderRadius: "20px",
-            border: "1px solid #e5e7eb",
-          }}
-        >
-          <h2>Restoranınızı dijitalleştirin</h2>
-
-          <p
-            style={{
-              color: "#6b7280",
-              fontSize: "17px",
-              lineHeight: "1.6",
-            }}
-          >
-            QR Menü ile müşterilerinize hızlı,
-            modern ve kolay bir menü deneyimi sunun.
-          </p>
-
-          <button
-            style={{
-              marginTop: "15px",
-              padding: "14px 24px",
-              borderRadius: "10px",
-              border: "none",
-              background: "#111827",
-              color: "#ffffff",
-              fontWeight: "bold",
-              cursor: "pointer",
-            }}
-          >
-            Hemen Başla
-          </button>
         </section>
       </main>
 
@@ -198,10 +152,9 @@ function App() {
           textAlign: "center",
           padding: "30px",
           color: "#6b7280",
-          fontSize: "14px",
         }}
       >
-        © 2026 QR Menü - Dijital Menü Sistemi
+        © 2026 MenuCraft QR
       </footer>
     </div>
   );
