@@ -18,6 +18,10 @@ function App() {
     },
   ]);
 
+  const [menuImage, setMenuImage] = useState("");
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysisDone, setAnalysisDone] = useState(false);
+
   const [product, setProduct] = useState({
     name: "",
     description: "",
@@ -27,8 +31,6 @@ function App() {
     allergens: [],
     image: "",
   });
-
-  const [menuImage, setMenuImage] = useState("");
 
   const allergens = [
     "Gluten",
@@ -42,8 +44,8 @@ function App() {
   ];
 
   const categories = [
-    "Ana Yemekler",
     "Başlangıçlar",
+    "Ana Yemekler",
     "Burgerler",
     "Pizza",
     "Salatalar",
@@ -51,9 +53,70 @@ function App() {
     "İçecekler",
   ];
 
+  function handleMenuImage(e) {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    const url = URL.createObjectURL(file);
+
+    setMenuImage(url);
+    setAnalysisDone(false);
+  }
+
+  function analyzeMenu() {
+    if (!menuImage) {
+      alert("Önce bir menü fotoğrafı yükleyin.");
+      return;
+    }
+
+    setAnalyzing(true);
+
+    /*
+      Şimdilik demo analiz.
+      Gerçek OCR/AI bağlantısını sonraki aşamada
+      buraya bağlayacağız.
+    */
+
+    setTimeout(() => {
+      setProducts([
+        {
+          name: "Izgara Köfte",
+          description: "Izgara köfte, pilav ve salata",
+          category: "Ana Yemekler",
+          price: "320",
+          calories: "720",
+          allergens: [],
+          image: "",
+        },
+        {
+          name: "Cheeseburger",
+          description: "Dana eti, cheddar peyniri ve özel sos",
+          category: "Burgerler",
+          price: "280",
+          calories: "680",
+          allergens: ["Gluten", "Süt"],
+          image: "",
+        },
+        {
+          name: "Çikolatalı Sufle",
+          description: "Sıcak çikolatalı sufle",
+          category: "Tatlılar",
+          price: "180",
+          calories: "520",
+          allergens: ["Gluten", "Yumurta", "Süt"],
+          image: "",
+        },
+      ]);
+
+      setAnalyzing(false);
+      setAnalysisDone(true);
+    }, 1800);
+  }
+
   function addProduct() {
     if (!product.name || !product.price) {
-      alert("Lütfen ürün adı ve fiyat girin.");
+      alert("Ürün adı ve fiyat zorunludur.");
       return;
     }
 
@@ -79,52 +142,24 @@ function App() {
     }));
   }
 
-  function handleProductImage(e) {
-    const file = e.target.files[0];
-
-    if (!file) return;
-
-    const imageUrl = URL.createObjectURL(file);
-
-    setProduct((p) => ({
-      ...p,
-      image: imageUrl,
-    }));
-  }
-
-  function handleMenuImage(e) {
-    const file = e.target.files[0];
-
-    if (!file) return;
-
-    setMenuImage(URL.createObjectURL(file));
-  }
-
   return (
     <div style={styles.page}>
-      {/* HEADER */}
 
       <header style={styles.header}>
         <strong style={styles.logo}>MenuCraft QR</strong>
-
-        <span style={styles.panelText}>
-          Yönetim Paneli
-        </span>
+        <span>Yönetim Paneli</span>
       </header>
 
       <main style={styles.container}>
 
-        {/* BAŞLIK */}
+        <h1 style={styles.title}>
+          Menü Yönetimi
+        </h1>
 
-        <div style={{ marginBottom: 25 }}>
-          <h1 style={styles.title}>
-            Menünüzü Oluşturun
-          </h1>
-
-          <p style={styles.subtitle}>
-            Restoran bilgilerinizi ve ürünlerinizi ekleyin.
-          </p>
-        </div>
+        <p style={styles.subtitle}>
+          Menünüzü fotoğraftan otomatik oluşturun veya
+          ürünlerinizi kendiniz ekleyin.
+        </p>
 
         {/* RESTORAN */}
 
@@ -144,11 +179,7 @@ function App() {
           />
 
           <textarea
-            style={{
-              ...styles.input,
-              minHeight: 90,
-              resize: "vertical",
-            }}
+            style={styles.textarea}
             value={restaurant.description}
             onChange={(e) =>
               setRestaurant({
@@ -160,29 +191,90 @@ function App() {
           />
         </section>
 
+        {/* FOTOĞRAFTAN MENÜ */}
+
+        <section style={styles.card}>
+
+          <div style={styles.sectionHeader}>
+            <div>
+              <h2>📸 Fotoğraftan Menü Oluştur</h2>
+
+              <p style={styles.subtitle}>
+                Menü fotoğrafınızı yükleyin. Sistem
+                ürünleri, kategorileri ve fiyatları
+                otomatik olarak çıkarmaya hazırlanacak.
+              </p>
+            </div>
+
+            <div style={styles.aiBadge}>
+              ✨ AI
+            </div>
+          </div>
+
+          <label style={styles.uploadBox}>
+
+            <div style={{ fontSize: 42 }}>
+              📷
+            </div>
+
+            <strong>
+              Menü fotoğrafı seç
+            </strong>
+
+            <span style={styles.smallText}>
+              JPG, PNG veya WEBP
+            </span>
+
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleMenuImage}
+              style={{ display: "none" }}
+            />
+
+          </label>
+
+          {menuImage && (
+            <div style={{ marginTop: 20 }}>
+
+              <img
+                src={menuImage}
+                alt="Yüklenen menü"
+                style={styles.menuImage}
+              />
+
+              <button
+                onClick={analyzeMenu}
+                style={styles.primaryButton}
+                disabled={analyzing}
+              >
+                {analyzing
+                  ? "🤖 Menü analiz ediliyor..."
+                  : "✨ Menüyü Analiz Et"}
+              </button>
+
+            </div>
+          )}
+
+          {analysisDone && (
+            <div style={styles.successBox}>
+              <strong>✓ Analiz tamamlandı</strong>
+
+              <p>
+                Menüde bulunan örnek ürünler aşağıya
+                aktarıldı. Yayınlamadan önce bilgileri
+                kontrol edip düzenleyebilirsiniz.
+              </p>
+            </div>
+          )}
+
+        </section>
+
         {/* ÜRÜN EKLE */}
 
         <section style={styles.card}>
-          <h2>🍔 Ürün Ekle</h2>
 
-          <label style={styles.label}>
-            Ürün Fotoğrafı
-          </label>
-
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleProductImage}
-            style={styles.fileInput}
-          />
-
-          {product.image && (
-            <img
-              src={product.image}
-              alt="Ürün"
-              style={styles.uploadPreview}
-            />
-          )}
+          <h2>🍔 Manuel Ürün Ekle</h2>
 
           <input
             style={styles.input}
@@ -197,10 +289,7 @@ function App() {
           />
 
           <textarea
-            style={{
-              ...styles.input,
-              minHeight: 80,
-            }}
+            style={styles.textarea}
             placeholder="Ürün açıklaması"
             value={product.description}
             onChange={(e) =>
@@ -256,30 +345,26 @@ function App() {
 
           <h3>⚠️ Alerjenler</h3>
 
-          <div style={styles.allergenContainer}>
+          <div style={styles.allergens}>
             {allergens.map((item) => {
-              const selected =
+              const active =
                 product.allergens.includes(item);
 
               return (
                 <button
                   key={item}
-                  type="button"
                   onClick={() => toggleAllergen(item)}
                   style={{
                     ...styles.allergen,
-                    background: selected
+                    background: active
                       ? "#fee2e2"
-                      : "#ffffff",
-                    color: selected
+                      : "#fff",
+                    color: active
                       ? "#b91c1c"
                       : "#344054",
-                    borderColor: selected
-                      ? "#fca5a5"
-                      : "#d0d5dd",
                   }}
                 >
-                  {selected ? "✓ " : ""}
+                  {active ? "✓ " : ""}
                   {item}
                 </button>
               );
@@ -290,204 +375,83 @@ function App() {
             onClick={addProduct}
             style={styles.primaryButton}
           >
-            + Ürünü Menüye Ekle
+            + Ürünü Ekle
           </button>
+
         </section>
 
-        {/* MENÜ ÖNİZLEME */}
+        {/* ÜRÜNLER */}
 
         <section style={styles.card}>
-          <h2>👁️ Menü Önizleme</h2>
 
-          <div style={styles.menuPreview}>
+          <h2>🍽️ Menü Ürünleri</h2>
 
-            <div style={styles.menuHeader}>
-              <div>
-                <h2 style={{ margin: 0 }}>
-                  {restaurant.name}
-                </h2>
+          {products.map((item, index) => (
+            <div
+              key={index}
+              style={styles.adminProduct}
+            >
 
-                <p style={styles.menuDescription}>
-                  {restaurant.description}
+              <div style={{ flex: 1 }}>
+
+                <strong>
+                  {item.name}
+                </strong>
+
+                <p style={styles.productDescription}>
+                  {item.description}
                 </p>
+
+                <span style={styles.meta}>
+                  {item.category}
+                </span>
+
+                {item.calories && (
+                  <span style={styles.meta}>
+                    🔥 {item.calories} kcal
+                  </span>
+                )}
+
+                {item.allergens.length > 0 && (
+                  <div style={styles.allergenText}>
+                    ⚠️ {item.allergens.join(", ")}
+                  </div>
+                )}
+
               </div>
 
-              <div style={styles.qrFake}>
-                QR
-              </div>
+              <strong style={styles.price}>
+                {item.price} TL
+              </strong>
+
             </div>
+          ))}
 
-            {/* KATEGORİLER */}
-
-            {categories.map((category) => {
-              const categoryProducts =
-                products.filter(
-                  (item) => item.category === category
-                );
-
-              if (categoryProducts.length === 0)
-                return null;
-
-              return (
-                <div key={category}>
-
-                  <h3 style={styles.categoryTitle}>
-                    {category}
-                  </h3>
-
-                  {categoryProducts.map(
-                    (item, index) => (
-                      <div
-                        key={index}
-                        style={styles.productCard}
-                      >
-
-                        {item.image ? (
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            style={styles.productImage}
-                          />
-                        ) : (
-                          <div
-                            style={
-                              styles.productPlaceholder
-                            }
-                          >
-                            🍽️
-                          </div>
-                        )}
-
-                        <div
-                          style={
-                            styles.productContent
-                          }
-                        >
-                          <div
-                            style={
-                              styles.productTop
-                            }
-                          >
-                            <strong
-                              style={{
-                                fontSize: 17,
-                              }}
-                            >
-                              {item.name}
-                            </strong>
-
-                            <strong
-                              style={{
-                                color: "#2563eb",
-                                whiteSpace:
-                                  "nowrap",
-                              }}
-                            >
-                              {item.price} TL
-                            </strong>
-                          </div>
-
-                          {item.description && (
-                            <p
-                              style={
-                                styles.productDescription
-                              }
-                            >
-                              {item.description}
-                            </p>
-                          )}
-
-                          <div
-                            style={
-                              styles.infoRow
-                            }
-                          >
-                            {item.calories && (
-                              <span>
-                                🔥 {item.calories} kcal
-                              </span>
-                            )}
-
-                            {item.allergens.length >
-                              0 && (
-                              <span
-                                style={{
-                                  color: "#b91c1c",
-                                }}
-                              >
-                                ⚠️{" "}
-                                {item.allergens.join(
-                                  ", "
-                                )}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* MENÜ FOTOĞRAFI */}
-
-        <section style={styles.card}>
-          <h2>
-            📸 Menü Fotoğrafından Otomatik Oluştur
-          </h2>
-
-          <p style={styles.subtitle}>
-            Restoran menüsünün fotoğrafını yükleyin.
-            İlerleyen aşamada yapay zeka ile fotoğraftaki
-            ürünleri otomatik olarak okuyup menüye
-            aktaracağız.
-          </p>
-
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleMenuImage}
-            style={styles.fileInput}
-          />
-
-          {menuImage && (
-            <div style={{ marginTop: 15 }}>
-              <img
-                src={menuImage}
-                alt="Menü"
-                style={styles.menuPhoto}
-              />
-
-              <p style={styles.success}>
-                ✓ Menü fotoğrafı yüklendi
-              </p>
-            </div>
-          )}
         </section>
 
         {/* QR */}
 
         <section style={styles.card}>
+
           <h2>📱 QR Menü</h2>
 
           <p style={styles.subtitle}>
-            Menünüz hazır olduğunda restoranınıza özel
-            QR kod oluşturulacak.
+            Menünüz hazır olduğunda müşterileriniz
+            QR kodu okutarak dijital menünüze
+            ulaşabilecek.
           </p>
 
           <button
             style={styles.primaryButton}
             onClick={() =>
               alert(
-                "QR kod sistemi bir sonraki aşamada aktif edilecek."
+                "QR kod sistemi bir sonraki aşamada bağlanacak."
               )
             }
           >
-            QR Kod Oluştur
+            🔳 QR Kod Oluştur
           </button>
+
         </section>
 
       </main>
@@ -496,11 +460,11 @@ function App() {
 }
 
 const styles = {
+
   page: {
     minHeight: "100vh",
     background: "#f4f6f8",
-    fontFamily:
-      "Arial, Helvetica, sans-serif",
+    fontFamily: "Arial, sans-serif",
     color: "#172033",
   },
 
@@ -515,10 +479,6 @@ const styles = {
 
   logo: {
     fontSize: 22,
-  },
-
-  panelText: {
-    fontSize: 15,
   },
 
   container: {
@@ -538,12 +498,53 @@ const styles = {
   },
 
   card: {
-    background: "white",
+    background: "#fff",
     padding: 24,
     borderRadius: 18,
     marginBottom: 20,
     border: "1px solid #e5e7eb",
-    boxSizing: "border-box",
+  },
+
+  sectionHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: 20,
+  },
+
+  aiBadge: {
+    background: "#eef2ff",
+    color: "#4338ca",
+    padding: "8px 14px",
+    borderRadius: 20,
+    height: "fit-content",
+    fontWeight: "bold",
+  },
+
+  uploadBox: {
+    marginTop: 15,
+    minHeight: 180,
+    border: "2px dashed #cbd5e1",
+    borderRadius: 16,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    cursor: "pointer",
+    background: "#f8fafc",
+  },
+
+  smallText: {
+    color: "#667085",
+    fontSize: 13,
+  },
+
+  menuImage: {
+    width: "100%",
+    maxHeight: 500,
+    objectFit: "contain",
+    borderRadius: 15,
+    border: "1px solid #e5e7eb",
   },
 
   input: {
@@ -554,34 +555,41 @@ const styles = {
     borderRadius: 10,
     border: "1px solid #d0d5dd",
     fontSize: 15,
-    fontFamily: "inherit",
   },
 
-  label: {
-    display: "block",
-    marginBottom: 8,
-    fontWeight: "bold",
-  },
-
-  fileInput: {
+  textarea: {
     width: "100%",
-    padding: 12,
-    marginBottom: 15,
-    border: "1px dashed #98a2b3",
-    borderRadius: 10,
-    background: "#f9fafb",
     boxSizing: "border-box",
+    padding: 13,
+    marginBottom: 12,
+    borderRadius: 10,
+    border: "1px solid #d0d5dd",
+    minHeight: 80,
+    fontFamily: "Arial, sans-serif",
+    fontSize: 15,
   },
 
-  uploadPreview: {
-    width: 150,
-    height: 120,
-    objectFit: "cover",
+  primaryButton: {
+    marginTop: 18,
+    padding: "14px 22px",
+    border: "none",
+    borderRadius: 11,
+    background: "#2563eb",
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 15,
+    cursor: "pointer",
+  },
+
+  successBox: {
+    marginTop: 18,
+    padding: 16,
     borderRadius: 12,
-    marginBottom: 15,
+    background: "#ecfdf3",
+    color: "#166534",
   },
 
-  allergenContainer: {
+  allergens: {
     display: "flex",
     flexWrap: "wrap",
     gap: 8,
@@ -590,126 +598,38 @@ const styles = {
   allergen: {
     padding: "9px 12px",
     borderRadius: 20,
-    border: "1px solid",
-    fontSize: 13,
+    border: "1px solid #d0d5dd",
     cursor: "pointer",
   },
 
-  primaryButton: {
-    marginTop: 20,
-    padding: "13px 20px",
-    border: "none",
-    borderRadius: 10,
-    background: "#2563eb",
-    color: "white",
-    fontWeight: "bold",
-    fontSize: 15,
-    cursor: "pointer",
-  },
-
-  menuPreview: {
-    background: "#ffffff",
-    borderRadius: 18,
-    padding: 22,
-    border: "1px solid #e5e7eb",
-  },
-
-  menuHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingBottom: 18,
-    borderBottom: "1px solid #eee",
-  },
-
-  menuDescription: {
-    color: "#667085",
-    marginBottom: 0,
-  },
-
-  qrFake: {
-    width: 55,
-    height: 55,
-    borderRadius: 10,
-    background: "#111827",
-    color: "white",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontWeight: "bold",
-  },
-
-  categoryTitle: {
-    marginTop: 25,
-    marginBottom: 12,
-    color: "#2563eb",
-    borderBottom: "2px solid #e5e7eb",
-    paddingBottom: 8,
-  },
-
-  productCard: {
+  adminProduct: {
     display: "flex",
     gap: 15,
-    padding: "15px 0",
+    padding: "18px 0",
     borderBottom: "1px solid #eee",
-  },
-
-  productImage: {
-    width: 105,
-    height: 95,
-    objectFit: "cover",
-    borderRadius: 12,
-    flexShrink: 0,
-  },
-
-  productPlaceholder: {
-    width: 105,
-    height: 95,
-    borderRadius: 12,
-    background: "#f2f4f7",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: 35,
-    flexShrink: 0,
-  },
-
-  productContent: {
-    flex: 1,
-    minWidth: 0,
-  },
-
-  productTop: {
-    display: "flex",
-    justifyContent: "space-between",
-    gap: 10,
   },
 
   productDescription: {
     color: "#667085",
-    fontSize: 14,
-    margin: "8px 0",
+    margin: "6px 0",
   },
 
-  infoRow: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: 10,
-    fontSize: 12,
+  meta: {
+    display: "inline-block",
+    marginRight: 12,
     color: "#667085",
+    fontSize: 13,
   },
 
-  menuPhoto: {
-    width: "100%",
-    maxHeight: 500,
-    objectFit: "contain",
-    borderRadius: 15,
-    border: "1px solid #e5e7eb",
+  allergenText: {
+    marginTop: 7,
+    color: "#b91c1c",
+    fontSize: 13,
   },
 
-  success: {
-    color: "#15803d",
-    fontWeight: "bold",
+  price: {
+    color: "#2563eb",
+    whiteSpace: "nowrap",
   },
 };
 
